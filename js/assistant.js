@@ -659,29 +659,32 @@
         chips.appendChild(c);
       });
     }
-    function ask(q) {
+        function ask(q) {
       q = String(q || input.value).trim();
       if (!q) return;
       input.value = '';
       bubble('me', q.replace(/[<>]/g, ''));
-      var hit = answer(q);
-      if (hit) {
-        bubble('bot', '<b class="t">' + hit.title + '</b>' + hit.body);
-        remember(q, hit.title + '. ' + hit.body);
-        if (hit.also.length) setChips(hit.also.concat(SUGGEST).slice(0, 5));
-        else setChips(SUGGEST);
-        return;
-      }
       var thinking = bubble('bot', 'Let me think…');
       remote(q).then(function (text) {
-        if (text) { thinking.innerHTML = text.replace(/[<>]/g, '').replace(/\n/g, '<br>'); remember(q, text); }
-        else {
-          thinking.innerHTML = '<b class="t">Not sure yet</b>I could not find an answer to that. Try asking it another way, or pick one of these:';
+        if (text) {
+          thinking.innerHTML = text.replace(/[<>]/g, '').replace(/\n/g, '<br>');
+          remember(q, text);
           setChips(SUGGEST);
+        } else {
+          var hit = answer(q);
+          if (hit) {
+            thinking.innerHTML = '<b class="t">' + hit.title + '</b>' + hit.body;
+            remember(q, hit.title + '. ' + hit.body);
+            setChips(hit.also.length ? hit.also.concat(SUGGEST).slice(0, 5) : SUGGEST);
+          } else {
+            thinking.innerHTML = '<b class="t">Not sure yet</b>I could not find an answer to that. Try asking it another way, or pick one of these:';
+            setChips(SUGGEST);
+          }
         }
         log.scrollTop = log.scrollHeight;
       });
     }
+
 
     function open() {
       wrap.classList.add('on');
