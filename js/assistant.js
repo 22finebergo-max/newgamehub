@@ -568,10 +568,20 @@
         stats: stats(),
         history: HISTORY.slice()
       })
-    }).then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) { return d && (d.answer || d.text) ? String(d.answer || d.text) : null; })
-      .catch(function () { return null; });
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) return { error: (d && d.error) || ('Server returned status ' + r.status) };
+        return d;
+      });
+    }).then(function (d) {
+      if (d && (d.answer || d.text)) return String(d.answer || d.text);
+      if (d && d.error) return 'Assistant error: ' + d.error;
+      return null;
+    }).catch(function (e) {
+      return 'Could not reach the assistant: ' + e;
+    });
   }
+
 
   /* ---------------- UI ---------------- */
   var SUGGEST = GAME === 'flappy'
